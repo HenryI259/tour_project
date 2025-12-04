@@ -1,0 +1,25 @@
+<launch>
+    <!-- World -->
+    <arg name="world_file" default="$(find tour_project)/worlds/room_hallway_world.world"/>
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <arg name="world_name" value="$(arg world_file)"/>
+        <arg name="paused" value="false"/>
+        <arg name="use_sim_time" value="true"/>
+    </include>
+
+    <include file="$(find turtlebot_bringup)/launch/minimal.launch" />
+
+    <!-- Start mapping -->
+    <include file="$(find turtlebot_navigation)/launch/gmapping_demo.launch" />
+
+    <!-- Start teleop -->
+    <node pkg="turtlebot_teleop" type="turtlebot_teleop_key" name="my_teleop_node" output="screen"></node>
+
+    <param name="robot_description" command="$(find xacro)/xacro '$(find turtlebot_description)/urdf/turtlebot_gazebo.urdf.xacro'"/>
+
+    <!-- Spawn TurtleBot2 -->
+    <node pkg="gazebo_ros" type="spawn_model" name="spawn_turtlebot" args="-urdf -model turtlebot -param robot_description -x 0 -y 0 -z 0.1" />
+
+    <!-- Run tour node -->
+    <node pkg="tour_project" type="map" name="map" output="screen"/>
+</launch>

@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>tour_project</name>
+  <version>0.0.0</version>
+  <description>The tour project package</description>
+
+
+  <maintainer email="hison259@gmail.com">henry</maintainer>
+
+
+  <license>TODO</license>
+
+
+  <!-- Build dependencies -->
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+
+  <!-- Run-time dependencies -->
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>nav_msgs</exec_depend>
+  <exec_depend>kobuki_msgs</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+
+
+  <!-- Optional: If using teleop, Gazebo, or navigation -->
+  <exec_depend>turtlebot_gazebo</exec_depend>
+  <exec_depend>turtlebot_teleop</exec_depend><buildtool_depend>catkin</buildtool_depend>
+
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <!-- Other tools can request additional information be placed here -->
+
+  </export>
+</package>
