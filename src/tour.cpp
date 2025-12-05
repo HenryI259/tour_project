@@ -8,6 +8,22 @@
 
 using namespace std;
 
+// Array of positions with x positions stored in even indices and y positions stored in odd
+struct node {
+    double x;
+    double y;
+};
+
+struct path {
+    int* nodes;
+    int path_size;
+    double path_distance;
+
+    ~path() {
+        delete[] nodes;
+    }
+};
+
 class WeightedGraph {
 private:
     double euclidean_dis(double x1, double y1, double x2, double y2) {
@@ -19,32 +35,21 @@ private:
 
     }
 
-public:
-    // Array of positions with x positions stored in even indices and y positions stored in odd
-    struct node {
-        double x;
-        double y;
-    };
-
-    struct path {
-        int* nodes;
-        int path_size;
-        double path_distance;
-    };
-    
+public: 
     node* nodes;
     int node_amount;
     double** edges;
 
-    WeightedGraph(double* nodes, int node_amount): nodes(nodes), node_amount(node_amount) {
-        edges = new double*[node_amount];
-        for(int i = 0; i < node_amount; i++) {
-            edges[i] = new double[node_amount];
-            for (int j = 0; j < node_amount; j++) {
-                // Use distance as good approximation as there won't be many detours off straight path
-                edges[i][j] = euclidean_dis(nodes[i].x, nodes[i].y, nodes[j].x, nodes[j].y);
-            }
+    WeightedGraph(node* nodes, int node_amount, double** edges): nodes(nodes), node_amount(node_amount), edges(edges) {
+        
+    }
+
+    ~WeightedGraph() {
+        delete[] nodes;
+        for (int i = 0; i < node_amount; i++) {
+            delete[] edges[i];
         }
+        delete[] edges;
     }
 
     // TODO: Implement A* that returns a path
@@ -52,7 +57,7 @@ public:
         
     }
 
-    path tour(int start_node, int tour_node_amount, int* tour_nodes) {
+    path tour(int start_node, int* tour_nodes, int tour_node_amount) {
         path** tour_paths = new path*[tour_node_amount];
         // Find all paths
         for(int i = 0; i < tour_node_amount; i++) {
@@ -106,11 +111,20 @@ public:
             tour_nodes[next_node_index] = -1;
             current_node_index  = next_node_index;
         }
+
         // Copy over nodes so array is the correct size
         tour_path.nodes = new int[tour_path.path_size];
         for (int j = 0; j < tour_path.path_size; j++) {
             tour_path.nodes[j] = path_nodes[j];
         }
+
+        // Free arrays
+        for (int i = 0; i < tour_node_amount; i++) {
+            delete[] tour_paths[i];
+        }
+        delete[] tour_paths;
+
+        delete[] path_nodes;
 
         return tour_path;
     }
@@ -140,10 +154,13 @@ private:
     double linear_speed = 0.3;
     double angular_speed = 1;
 
-    double* graph;
+    int node_amount;
+    node* nodes;
+    double** edges;
 
-    int current_node;
-    int dest_node;
+    WeightedGraph* graph;
+
+    int current_node = 0;
 
     // Method for converting all angles to the range [0, 2pi]
     double correctAnglePos(double a) {
@@ -239,7 +256,28 @@ public:
                 }
             }
         }
-    }    
+    }   
+
+    void init() {
+        node_amount;
+        nodes = new node[node_amount];
+        edges = new double*[node_amount]{
+            new double[node_amount]{},
+            new double[node_amount]{},
+            new double[node_amount]{},
+            new double[node_amount]{},
+            new double[node_amount]{}
+        };
+
+        graph = new WeightedGraph(nodes, node_amount, edges);
+        
+        int tour_node_amount;
+        int* tour_nodes = new int[tour_node_amount];
+        int start_node;
+
+        path tour_path = graph->tour(start_node, tour_nodes, tour_node_amount);
+
+    }
 
     // move function
     void move(ros::Publisher pub, ros::Rate rate) {
@@ -264,18 +302,12 @@ public:
 
         // main loop
         while (ros::ok()) {
-            // DRIVE FORWARD BEHAVIOR
-            linear_wire = linear_speed;
+            // BASE BEHAVIOR
+            linear_wire = 0;
             angular_wire = 0;
             
-            // RANDOM TURN BEHAVIOR
-            if (sqrt((pos_x-start_x)*(pos_x-start_x) + (pos_y-start_y)*(pos_y-start_y)) > 0.3048 && !uninterrupted_turn && left_min > 0.6 && right_min > 0.6) {
-                turning_angle = distrib(gen);
-                start_angle = angle;
-
-                start_x = pos_x;
-                start_y = pos_y;
-            }
+            // TRAVEL TO NODE BEHAVIOR
+            
 
             // AVOID ASYMETRIC OBJECTS BEHAVIOR
             if (left_min < 0.305) {
