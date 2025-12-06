@@ -13,9 +13,8 @@
 
     <param name="robot_description" command="$(find xacro)/xacro '$(find turtlebot_description)/urdf/my_robot.urdf.xacro'" />
 
-    <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" />
     
 
-    <!-- Run tour node -->
+    <!-- Run map node -->
     <node pkg="tour_project" type="map" name="map" output="screen"/>
 </launch>

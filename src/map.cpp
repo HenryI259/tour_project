@@ -266,8 +266,6 @@ int main(int argc, char **argv)
 }
 
 // Command to run robot
-// roslaunch turtlebot_bringup minimal.launch
-// roslaunch turtlebot_bringup 3dsensor.launch
 // roslaunch tour_project turtlebot_map.launch
 
 // Command to run sim
