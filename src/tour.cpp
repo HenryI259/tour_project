@@ -167,11 +167,6 @@ private:
     double linear_speed = 0.3;
     double angular_speed = 1;
 
-    vector<Node> nodes;
-
-    WeightedGraph* graph;
-
-    Path tour_path;
 
     int current_node = 0;
 
@@ -282,36 +277,7 @@ public:
         }
     }   
 
-    void init() {
-        vector<Node> nodes(5);
-        Node node1(0.0, 0.0);
-        nodes[0] = node1;
-        Node node2(1.0, 0.0);
-        nodes[1] = node2;
-        Node node3(1.0, 1.0);
-        nodes[2] = node3;
-        Node node4(0.0, 1.0);
-        nodes[3] = node4;
-        Node node5(0.5, 0.5);
-        nodes[4] = node5;
-
-        graph = new WeightedGraph(nodes);
-
-        graph->add_edge(0, 1);
-        graph->add_edge(1, 2);
-        graph->add_edge(2, 3);
-        graph->add_edge(3, 0);
-        graph->add_edge(0, 4);
-        graph->add_edge(1, 4);
-        graph->add_edge(2, 4);
-        graph->add_edge(3, 4); 
-        
-        vector<int> tour_nodes = {0, 2};
-        int start_node = 0;
-
-        tour_path = graph->tour(start_node, tour_nodes);
-
-    }
+   
 
     // move function
     void move(ros::Publisher pub, ros::Rate rate) {
@@ -339,45 +305,11 @@ public:
 
         // main loop
         while (ros::ok()) {
-            printf("Current Node: %d / Target Node: (%.2f, %.2f) / Position: (%.2f, %.2f)\n", current_node, tour_path.nodes[current_node].x, tour_path.nodes[current_node].y, pos_x, pos_y, left_min, right_min);
-            // Update node if reached
-            if(euclidean_dis(Node(pos_x, pos_y), tour_path.nodes[current_node]) < 0.1) {
-                if (current_node < tour_path.nodes.size() - 1) {
-                    current_node++;
-                }
-                else {
-                    tour_finished = true;
-                }
-            }
+            
             
             // BASE BEHAVIOR
             linear_wire = 0;
             angular_wire = 0;
-            
-            // TRAVEL TO NODE BEHAVIOR
-            double target_angle = atan2(tour_path.nodes[current_node].y - pos_y, tour_path.nodes[current_node].x - pos_x);
-            double angle_diff = correctAngle(target_angle - angle);
-            
-            if (angle_diff > 0.1) {
-                angular_wire = angular_speed;
-            }
-            else if (angle_diff < -0.1) {
-                angular_wire = -angular_speed;
-            }
-            else {
-                angular_wire = 0;
-                linear_wire = linear_speed;
-            }
-
-            // AVOID ASYMETRIC OBJECTS BEHAVIOR
-            if (left_min < 0.305) {
-                angular_wire = -angular_speed;
-                linear_wire = linear_speed/2;
-            }
-            else if (right_min < 0.305) {
-                angular_wire = angular_speed;
-                linear_wire = linear_speed/2;
-            }
 
             
             // AVOID SYMETRIC OBJECTS BEHAVIOR
