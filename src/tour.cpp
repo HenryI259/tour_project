@@ -366,7 +366,7 @@ public:
                 angular_wire = -angular_speed;
                 linear_wire = linear_speed;
             }
-            else if (angle_diff > 0.5) 
+            else if (angle_diff > 0.5) {
                 angular_wire = angular_speed;
             }
             else if (angle_diff < -0.5) {
