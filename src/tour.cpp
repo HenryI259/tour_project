@@ -286,13 +286,13 @@ public:
         vector<Node> nodes(5);
         Node node1(0.0, 0.0);
         nodes[0] = node1;
-        Node node2(2.0, 0.0);
+        Node node2(1.0, 0.0);
         nodes[1] = node2;
-        Node node3(2.0, 2.0);
+        Node node3(1.0, 1.0);
         nodes[2] = node3;
-        Node node4(0.0, 2.0);
+        Node node4(0.0, 1.0);
         nodes[3] = node4;
-        Node node5(1.0, 10.0);
+        Node node5(0.5, 10.0);
         nodes[4] = node5;
 
         graph = new WeightedGraph(nodes);
