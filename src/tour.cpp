@@ -360,11 +360,9 @@ public:
             
             if (angle_diff > 0.1) {
                 angular_wire = angular_speed;
-                linear_wire = linear_speed;
             }
             else if (angle_diff < -0.1) {
                 angular_wire = -angular_speed;
-                linear_wire = linear_speed;
             }
             else if (angle_diff > 0.3) {
                 angular_wire = angular_speed;
