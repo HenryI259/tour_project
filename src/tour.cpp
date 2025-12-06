@@ -341,7 +341,7 @@ public:
         while (ros::ok()) {
             printf("Current Node: %d / Target Node: (%.2f, %.2f) / Position: (%.2f, %.2f)\n", current_node, tour_path.nodes[current_node].x, tour_path.nodes[current_node].y, pos_x, pos_y, left_min, right_min);
             // Update node if reached
-            if(euclidean_dis(Node(pos_x, pos_y), tour_path.nodes[current_node]) < 0.1) {
+            if(euclidean_dis(Node(pos_x, pos_y), tour_path.nodes[current_node]) < 0.05) {
                 if (current_node < tour_path.nodes.size() - 1) {
                     current_node++;
                 }
@@ -358,10 +358,18 @@ public:
             double target_angle = atan2(tour_path.nodes[current_node].y - pos_y, tour_path.nodes[current_node].x - pos_x);
             double angle_diff = correctAngle(target_angle - angle);
             
-            if (angle_diff > 0.15) {
+            if (angle_diff > 0.1) {
+                angular_wire = angular_speed;
+                linear_wire = linear_speed;
+            }
+            else if (angle_diff < -0.1) {
+                angular_wire = -angular_speed;
+                linear_wire = linear_speed;
+            }
+            else if (angle_diff > 0.5) 
                 angular_wire = angular_speed;
             }
-            else if (angle_diff < -0.15) {
+            else if (angle_diff < -0.5) {
                 angular_wire = -angular_speed;
             }
             else {
