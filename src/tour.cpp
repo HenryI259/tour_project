@@ -292,7 +292,7 @@ public:
         nodes[2] = node3;
         Node node4(0.0, 2.0);
         nodes[3] = node4;
-        Node node5(1.0, 1.0);
+        Node node5(1.0, 10.0);
         nodes[4] = node5;
 
         graph = new WeightedGraph(nodes);
@@ -366,10 +366,10 @@ public:
                 angular_wire = -angular_speed;
                 linear_wire = linear_speed;
             }
-            else if (angle_diff > 0.5) {
+            else if (angle_diff > 0.3) {
                 angular_wire = angular_speed;
             }
-            else if (angle_diff < -0.5) {
+            else if (angle_diff < -0.3) {
                 angular_wire = -angular_speed;
             }
             else {
