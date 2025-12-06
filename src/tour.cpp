@@ -402,6 +402,13 @@ int main(int argc, char **argv)
 
     ros::Rate rate(60);
 
+    while (true){
+        printf("Starting Robot Tour...\n");
+    // Initialize robot
+    //robot.init();
+    
+    printf("Robot Tour Initialized.\n");
+    }
     printf("Starting Robot Tour...\n");
     // Initialize robot
     //robot.init();
