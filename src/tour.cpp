@@ -1,130 +1,143 @@
-#include "ros/ros.h"
+/*#include "ros/ros.h"
 #include "geometry_msgs/Twist.h"
 #include "nav_msgs/Odometry.h"
 #include "kobuki_msgs/BumperEvent.h"
-#include "sensor_msgs/Image.h"
+#include "sensor_msgs/Image.h"*/
 #include <cmath>
 #include <random>
+#include <queue>
+#include <vector>
+#include <utility>
+#include <limits>
+#include <algorithm>
 
 using namespace std;
 
+double euclidean_dis(Node n1, Node n2) {
+    return hypot(n1.x - n2.x, n1.y - n2.y);
+}
+
 // Array of positions with x positions stored in even indices and y positions stored in odd
-struct node {
+struct Node {
     double x;
     double y;
+
+    Node(double x=0, double y=0) : x(x), y(y) {}
 };
 
-struct path {
-    int* nodes;
-    int path_size;
+struct Path {
+    vector<Node> nodes;
     double path_distance;
 
-    ~path() {
-        delete[] nodes;
+    void set_distance() {
+        path_distance = 0;
+        for (int i = 0; i < nodes.size()-1; i++) {
+            path_distance += euclidean_dis(nodes[i], nodes[i+1]);
+        }
     }
 };
 
 class WeightedGraph {
 private:
-    double euclidean_dis(double x1, double y1, double x2, double y2) {
-        return sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2));
-    }
-
-    // TODO: Find distance along a path by adding the distances between nodes
-    double path_distance(int path_size, int* path) {
-
-    }
 
 public: 
-    node* nodes;
-    int node_amount;
-    double** edges;
+    vector<Node> nodes;
+    vector<vector<pair<int, double>>> edges;
 
-    WeightedGraph(node* nodes, int node_amount, double** edges): nodes(nodes), node_amount(node_amount), edges(edges) {
+    WeightedGraph(vector<Node> nodes): nodes(nodes) {
+        edges.resize(nodes.size());
+    }
+
+    void add_edge(int u, int v) {
+        double dis = euclidean_dis(nodes[u], nodes[v]);
+        edges[u].push_back({v, dis});
+        edges[v].push_back({u, dis});
+    }
+
+    Path dijkstra(int start_node, int dest_node) {
+        priority_queue<pair<double, int>, vector<pair<double, int>>, greater<pair<double, int>>> pq;
+        vector<double> distances(nodes.size(), numeric_limits<double>::max());
+        vector<int> parent(nodes.size(), -1);
         
-    }
+        distances[start_node] = 0;
+        pq.emplace(0.0, start_node);
 
-    ~WeightedGraph() {
-        delete[] nodes;
-        for (int i = 0; i < node_amount; i++) {
-            delete[] edges[i];
-        }
-        delete[] edges;
-    }
+        while (!pq.empty()) {
+            auto top = pq.top();
+            pq.pop();
 
-    // TODO: Implement A* that returns a path
-    path Astar(int start_node, int dest_node) {
-        
-    }
+            int n = top.second;
+            double dist = top.first;
 
-    path tour(int start_node, int* tour_nodes, int tour_node_amount) {
-        path** tour_paths = new path*[tour_node_amount];
-        // Find all paths
-        for(int i = 0; i < tour_node_amount; i++) {
-            tour_paths[i] = new path[tour_node_amount];
-            for (int j = 0; j < tour_node_amount; j++) {
-                tour_paths[i][j] = Astar(tour_nodes[i], tour_nodes[j]);
+            if (dist > distances[n])
+                continue;
+                
+            for (auto& neighbor : edges[n]) {
+                int v = neighbor.first;
+                double w = neighbor.second;
+
+                if (distances[n] + w < distances[v]) {
+                    distances[v] = distances[n] + w;
+                    parent[v] = n;
+                    pq.emplace(distances[v], v);
+                }
             }
         }
-        
+
+        vector<Node> path_nodes;
+        int current_node = dest_node;
+        while(current_node != -1) {
+            path_nodes.push_back(nodes[current_node]);
+            current_node = parent[current_node];
+        }
+        reverse(path_nodes.begin(), path_nodes.end());
+
+        Path path_result;
+        path_result.nodes = path_nodes;
+        path_result.set_distance();
+        return path_result;
+    }
+
+    Path tour(int start_node, vector<int> tour_nodes) {
+        vector<int> remaining = tour_nodes;
         int current_node_index;
         // Find the start node set it as the beginning and mark it as removed nodes to choose
-        for (int i = 0; i < tour_node_amount; i++) {
-            if (tour_nodes[i] == start_node) {
+        for (int i = 0; i < remaining.size(); i++) {
+            if (remaining[i] == start_node) {
                 current_node_index = i;
-                tour_nodes[i] = -1;
             }
         }
 
         // Final tour path
-        path tour_path;
-        tour_path.path_distance = 0;
-        tour_path.path_size = 0;
-        // Temp path nodes
-        int tour_index = 0;
-        int* path_nodes = new int[node_amount];
-        for (int i = 0; i < tour_node_amount-1; i++) {
-            double min_dis = 1000;
+        Path tour_path;
+        tour_path.nodes.push_back(nodes[start_node]);
+        for (int i = 0; i < remaining.size()-1; i++) {
+            double min_dis = numeric_limits<double>::max();
             int next_node_index;
             // Find nearest neighbor
-            for (int j = 0; j < tour_node_amount; j++) {
-                if (tour_nodes[j] != -1) {
-                    if (tour_paths[current_node_index][j].path_distance < min_dis) {
-                        min_dis = tour_paths[current_node_index][j].path_distance;
+            Path min_inner_path;
+            for (int j = 0; j < remaining.size(); j++) {
+                if (remaining[j] != -1 && j != current_node_index) {
+                    Path inner_path = dijkstra(remaining[current_node_index], remaining[j]);
+                    if (inner_path.path_distance < min_dis) {
+                        min_dis = inner_path.path_distance;
                         next_node_index = j;
+                        min_inner_path = inner_path;
                     }
                 }
             }
 
             // Add inner path to temp path
-            path inner_path = tour_paths[current_node_index][next_node_index];
-            for (int j = 0; j < inner_path.path_size; j++) {
-                path_nodes[tour_index] = inner_path.nodes[j];
-                tour_index++;
+            for (int j = 1; j < min_inner_path.nodes.size(); j++) {
+                tour_path.nodes.push_back(min_inner_path.nodes[j]);
             }
-
-            // Update path size and distance
-            tour_path.path_size += inner_path.path_size;
-            tour_path.path_distance += inner_path.path_distance;
             
             // Mark node as removed and update index
-            tour_nodes[next_node_index] = -1;
+            remaining[current_node_index] = -1;
             current_node_index  = next_node_index;
         }
 
-        // Copy over nodes so array is the correct size
-        tour_path.nodes = new int[tour_path.path_size];
-        for (int j = 0; j < tour_path.path_size; j++) {
-            tour_path.nodes[j] = path_nodes[j];
-        }
-
-        // Free arrays
-        for (int i = 0; i < tour_node_amount; i++) {
-            delete[] tour_paths[i];
-        }
-        delete[] tour_paths;
-
-        delete[] path_nodes;
+        tour_path.set_distance();
 
         return tour_path;
     }
@@ -154,17 +167,17 @@ private:
     double linear_speed = 0.3;
     double angular_speed = 1;
 
-    int node_amount;
-    node* nodes;
-    double** edges;
+    vector<Node> nodes;
 
     WeightedGraph* graph;
+
+    Path tour_path;
 
     int current_node = 0;
 
     // Method for converting all angles to the range [0, 2pi]
     double correctAnglePos(double a) {
-        while (a > 6.28) {
+        while (a >= 6.28) {
             a -= 6.28;
         }
         while (a < 0) {
@@ -173,9 +186,20 @@ private:
         return a;
     }
 
+    // Method for converting all angles to the range [-pi, pi]
+    double correctAngle(double a) {
+        while (a >= 3.14) {
+            a -= 6.28;
+        }
+        while (a < -3.14) {
+            a += 6.28;
+        }
+        return a;
+    }
+
     // Method for converting all angles to the range [-2pi, 0]
     double correctAngleNeg(double a) {
-        while (a > 0) {
+        while (a >= 0) {
             a -= 6.28;
         }
         while (a < -6.28) {
@@ -259,23 +283,33 @@ public:
     }   
 
     void init() {
-        node_amount;
-        nodes = new node[node_amount];
-        edges = new double*[node_amount]{
-            new double[node_amount]{},
-            new double[node_amount]{},
-            new double[node_amount]{},
-            new double[node_amount]{},
-            new double[node_amount]{}
-        };
+        vector<Node> nodes(5);
+        Node node1(0.0, 0.0);
+        nodes[0] = node1;
+        Node node2(1.0, 0.0);
+        nodes[1] = node2;
+        Node node3(1.0, 1.0);
+        nodes[2] = node3;
+        Node node4(0.0, 1.0);
+        nodes[3] = node4;
+        Node node5(0.5, 0.5);
+        nodes[4] = node5;
 
-        graph = new WeightedGraph(nodes, node_amount, edges);
+        graph = new WeightedGraph(nodes);
+
+        graph->add_edge(0, 1);
+        graph->add_edge(1, 2);
+        graph->add_edge(2, 3);
+        graph->add_edge(3, 0);
+        graph->add_edge(0, 4);
+        graph->add_edge(1, 4);
+        graph->add_edge(2, 4);
+        graph->add_edge(3, 4); 
         
-        int tour_node_amount;
-        int* tour_nodes = new int[tour_node_amount];
-        int start_node;
+        vector<int> tour_nodes = {0, 3};
+        int start_node = 0;
 
-        path tour_path = graph->tour(start_node, tour_nodes, tour_node_amount);
+        tour_path = graph->tour(start_node, tour_nodes);
 
     }
 
@@ -295,6 +329,9 @@ public:
 
         float turning_angle = 0;
 
+        // Flag for if the robot has finished the tour
+        bool tour_finished = false;
+
         // init random generator
         std::random_device rd;
         std::mt19937 gen(rd());
@@ -302,12 +339,34 @@ public:
 
         // main loop
         while (ros::ok()) {
+            // Update node if reached
+            if(euclidean_dis(Node(pos_x, pos_y), tour_path.nodes[current_node]) < 0.2) {
+                if (current_node < tour_path.nodes.size() - 1) {
+                    current_node++;
+                }
+                else {
+                    tour_finished = true;
+                }
+            }
+            
             // BASE BEHAVIOR
             linear_wire = 0;
             angular_wire = 0;
             
             // TRAVEL TO NODE BEHAVIOR
+            double target_angle = atan2(tour_path.nodes[current_node].y - pos_y, tour_path.nodes[current_node].x - pos_x);
+            double angle_diff = correctAngle(target_angle - angle);
             
+            if (angle_diff > 0.1) {
+                angular_wire = angular_speed;
+            }
+            else if (angle_diff < -0.1) {
+                angular_wire = -angular_speed;
+            }
+            else {
+                angular_wire = 0;
+                linear_wire = linear_speed;
+            }
 
             // AVOID ASYMETRIC OBJECTS BEHAVIOR
             if (left_min < 0.305) {
@@ -366,6 +425,11 @@ public:
                 angular_wire = 0;
             }
             
+            // Check if tour is finished
+            if (tour_finished) {
+                linear_wire = 0;
+                angular_wire = 0;
+            }
 
             // Publish the message to the robot
             geometry_msgs::Twist vel_msg;
@@ -386,6 +450,7 @@ public:
 
 int main(int argc, char **argv)
 {
+    
     ros::init(argc, argv, "move_turtlebot2");
 
     ExplorerRobot robot;

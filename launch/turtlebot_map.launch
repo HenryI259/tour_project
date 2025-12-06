@@ -4,7 +4,7 @@
     <!-- Turtlebot minimal -->
     <include file="$(find turtlebot_bringup)/launch/minimal.launch"/>
 
-    <!-- 3D sensor (Kinect / Xtion) -->
+    <!-- 3D sensor -->
     <include file="$(find turtlebot_bringup)/launch/3dsensor.launch"/>
 
 
