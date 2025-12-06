@@ -286,13 +286,13 @@ public:
         vector<Node> nodes(5);
         Node node1(0.0, 0.0);
         nodes[0] = node1;
-        Node node2(1.0, 0.0);
+        Node node2(2.0, 0.0);
         nodes[1] = node2;
-        Node node3(1.0, 1.0);
+        Node node3(2.0, 2.0);
         nodes[2] = node3;
-        Node node4(0.0, 1.0);
+        Node node4(0.0, 2.0);
         nodes[3] = node4;
-        Node node5(0.5, 0.5);
+        Node node5(1.0, 1.0);
         nodes[4] = node5;
 
         graph = new WeightedGraph(nodes);
@@ -306,7 +306,7 @@ public:
         graph->add_edge(2, 4);
         graph->add_edge(3, 4); 
         
-        vector<int> tour_nodes = {0, 2};
+        vector<int> tour_nodes = {0, 1, 2, 3, 4};
         int start_node = 0;
 
         tour_path = graph->tour(start_node, tour_nodes);
@@ -358,10 +358,10 @@ public:
             double target_angle = atan2(tour_path.nodes[current_node].y - pos_y, tour_path.nodes[current_node].x - pos_x);
             double angle_diff = correctAngle(target_angle - angle);
             
-            if (angle_diff > 0.1) {
+            if (angle_diff > 0.15) {
                 angular_wire = angular_speed;
             }
-            else if (angle_diff < -0.1) {
+            else if (angle_diff < -0.15) {
                 angular_wire = -angular_speed;
             }
             else {
