@@ -1,8 +1,12 @@
 <launch>
     <param name="use_sim_time" value="false"/>
     
-    <!-- Start mapping -->
-    <include file="$(find turtlebot_navigation)/launch/gmapping_demo.launch" />
+    <!-- Turtlebot minimal -->
+    <include file="$(find turtlebot_bringup)/launch/minimal.launch"/>
+
+    <!-- 3D sensor (Kinect / Xtion) -->
+    <include file="$(find turtlebot_bringup)/launch/3dsensor.launch"/>
+
 
     <!-- Start teleop -->
     //<node pkg="turtlebot_teleop" type="turtlebot_teleop_key" name="my_teleop_node" output="screen"></node>

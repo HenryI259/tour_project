@@ -104,7 +104,7 @@ public:
             }
 
             // Update path size and distance
-            tour_path.path_size += inner_path.size;
+            tour_path.path_size += inner_path.path_size;
             tour_path.path_distance += inner_path.path_distance;
             
             // Mark node as removed and update index
@@ -128,7 +128,7 @@ public:
 
         return tour_path;
     }
-}
+};
 
 class ExplorerRobot {
 private:
@@ -413,5 +413,5 @@ int main(int argc, char **argv)
 // Command to run robot
 // roslaunch turtlebot_bringup minimal.launch
 // roslaunch turtlebot_bringup 3dsensor.launch
-// roslaunch tour_project room_hallway_world.launch
-// roslaunch tour_project turtlebot.launch
+// roslaunch tour_project room_hallway_world_tour.launch
+// roslaunch tour_project turtlebot_tour.launch
