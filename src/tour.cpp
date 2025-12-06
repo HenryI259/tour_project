@@ -1,8 +1,8 @@
-/*#include "ros/ros.h"
+#include "ros/ros.h"
 #include "geometry_msgs/Twist.h"
 #include "nav_msgs/Odometry.h"
 #include "kobuki_msgs/BumperEvent.h"
-#include "sensor_msgs/Image.h"*/
+#include "sensor_msgs/Image.h"
 #include <cmath>
 #include <random>
 #include <queue>
@@ -13,10 +13,6 @@
 
 using namespace std;
 
-double euclidean_dis(Node n1, Node n2) {
-    return hypot(n1.x - n2.x, n1.y - n2.y);
-}
-
 // Array of positions with x positions stored in even indices and y positions stored in odd
 struct Node {
     double x;
@@ -24,6 +20,10 @@ struct Node {
 
     Node(double x=0, double y=0) : x(x), y(y) {}
 };
+
+double euclidean_dis(Node n1, Node n2) {
+    return hypot(n1.x - n2.x, n1.y - n2.y);
+}
 
 struct Path {
     vector<Node> nodes;
