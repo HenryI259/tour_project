@@ -472,11 +472,11 @@ int main(int argc, char **argv)
 
     printf("Starting Robot Tour...\n");
     // Initialize robot
-    robot.init();
+    //robot.init();
     
     printf("Robot Tour Initialized.\n");
     // Run move method
-    robot.move(pub, rate);
+    //robot.move(pub, rate);
 
     return 0;
 }
