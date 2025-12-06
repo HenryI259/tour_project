@@ -470,9 +470,11 @@ int main(int argc, char **argv)
 
     ros::Rate rate(60);
 
+    printf("Starting Robot Tour...\n");
     // Initialize robot
     robot.init();
     
+    printf("Robot Tour Initialized.\n");
     // Run move method
     robot.move(pub, rate);
 
