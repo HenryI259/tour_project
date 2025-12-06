@@ -470,6 +470,9 @@ int main(int argc, char **argv)
 
     ros::Rate rate(60);
 
+    // Initialize robot
+    robot.init();
+    
     // Run move method
     robot.move(pub, rate);
 
@@ -477,7 +480,5 @@ int main(int argc, char **argv)
 }
 
 // Command to run robot
-// roslaunch turtlebot_bringup minimal.launch
-// roslaunch turtlebot_bringup 3dsensor.launch
 // roslaunch tour_project room_hallway_world_tour.launch
 // roslaunch tour_project turtlebot_tour.launch
