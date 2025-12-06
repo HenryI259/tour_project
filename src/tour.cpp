@@ -306,7 +306,7 @@ public:
         graph->add_edge(2, 4);
         graph->add_edge(3, 4); 
         
-        vector<int> tour_nodes = {0, 3};
+        vector<int> tour_nodes = {0, 2};
         int start_node = 0;
 
         tour_path = graph->tour(start_node, tour_nodes);
@@ -339,8 +339,9 @@ public:
 
         // main loop
         while (ros::ok()) {
+            printf("Current Node: %d / Target Node: (%.2f, %.2f) / Position: (%.2f, %.2f)\n", current_node, tour_path.nodes[current_node].x, tour_path.nodes[current_node].y, pos_x, pos_y, left_min, right_min);
             // Update node if reached
-            if(euclidean_dis(Node(pos_x, pos_y), tour_path.nodes[current_node]) < 0.2) {
+            if(euclidean_dis(Node(pos_x, pos_y), tour_path.nodes[current_node]) < 0.1) {
                 if (current_node < tour_path.nodes.size() - 1) {
                     current_node++;
                 }
