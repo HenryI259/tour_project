@@ -175,7 +175,7 @@ public:
     void init() {
         vector<Node> nodes(5);
         nodes[0] = Node(0,0);
-        nodes[1] = Node(1,0.5);
+        nodes[1] = Node(5,0);
         // nodes[2] = Node(2,2);
         // nodes[3] = Node(0,2);
         // nodes[4] = Node(1,1);
