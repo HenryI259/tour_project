@@ -17,8 +17,6 @@
   <build_depend>geometry_msgs</build_depend>
 
   <!-- Run-time dependencies -->
-  <depend>roscpp</depend>
-  <depend>geometry_msgs</depend>
   <depend>nav_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>kobuki_msgs</depend>
