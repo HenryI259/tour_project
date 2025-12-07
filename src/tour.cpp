@@ -176,14 +176,14 @@ public:
         vector<Node> nodes(5);
         nodes[0] = Node(0,0);
         nodes[1] = Node(5,0);
-        // nodes[2] = Node(2,2);
+        nodes[2] = Node(5,-1.5);
         // nodes[3] = Node(0,2);
         // nodes[4] = Node(1,1);
 
         graph = new WeightedGraph(nodes);
 
         graph->add_edge(0,1);
-        // graph->add_edge(1,2);
+        graph->add_edge(1,2);
         // graph->add_edge(2,3);
         // graph->add_edge(3,0);
         // graph->add_edge(0,4);
@@ -191,7 +191,7 @@ public:
         // graph->add_edge(2,4);
         // graph->add_edge(3,4);
 
-        vector<int> tour_nodes = {0, 1};
+        vector<int> tour_nodes = {0, 1, 2};
         tour_path = graph->tour(0, tour_nodes);
     }
 
