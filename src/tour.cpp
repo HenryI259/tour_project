@@ -3,6 +3,9 @@
 #include "nav_msgs/Odometry.h"
 #include "kobuki_msgs/BumperEvent.h"
 #include "sensor_msgs/Image.h"
+#include <actionlib/client/simple_action_client.h>
+#include <move_base_msgs/MoveBaseAction.h>
+#include <tf/tf.h>
 #include <cmath>
 #include <random>
 #include <queue>
@@ -237,32 +240,16 @@ public:
 
 int main(int argc, char **argv)
 {
-    
-    ros::init(argc, argv, "move_turtlebot2");
-
-    ExplorerRobot robot;
-
-    // Node Handler
+    ros::init(argc, argv, "turtlebot_tour_navstack");
     ros::NodeHandle nh;
 
-    // Publisher to TurtleBot2 /mobile_base/commands/velocity
-    ros::Publisher pub = nh.advertise<geometry_msgs::Twist>("/mobile_base/commands/velocity", 10);
-    
-    // Subscribers
+    ExplorerRobot robot;
     ros::Subscriber odom_sub = nh.subscribe("/odom", 10, &ExplorerRobot::getPosition, &robot);
-    ros::Subscriber teleop_sub = nh.subscribe("/my_teleop_node/cmd_vel", 10, &ExplorerRobot::getInputs, &robot);
-    ros::Subscriber bumper_sub = nh.subscribe("/mobile_base/events/bumper", 10, &ExplorerRobot::getBumper, &robot);
-    ros::Subscriber lidar_sub = nh.subscribe("/camera/depth/image_raw", 10, &ExplorerRobot::getImage, &robot);
 
-    ros::Rate rate(60);
-
-    printf("Starting Robot Tour...\n");
-    // Initialize robot
     robot.init();
-    
-    printf("Robot Tour Initialized.\n");
-    // Run move method
-    robot.move(pub, rate);
+
+    ROS_INFO("Starting tour with Navigation Stack.");
+    robot.run();
 
     return 0;
 }

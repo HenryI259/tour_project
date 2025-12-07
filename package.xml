@@ -17,12 +17,15 @@
   <build_depend>geometry_msgs</build_depend>
 
   <!-- Run-time dependencies -->
-  <exec_depend>roscpp</exec_depend>
-  <exec_depend>geometry_msgs</exec_depend>
-  <exec_depend>nav_msgs</exec_depend>
-  <exec_depend>kobuki_msgs</exec_depend>
-  <exec_depend>sensor_msgs</exec_depend>
+  <depend>roscpp</depend>
+  <depend>geometry_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>kobuki_msgs</depend>
+  <depend>actionlib</depend>
+  <depend>move_base_msgs</depend>
   <exec_depend>std_msgs</exec_depend>
+  <depend>tf</depend>
 
 
   <!-- Optional: If using teleop, Gazebo, or navigation -->
