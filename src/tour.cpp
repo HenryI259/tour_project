@@ -180,7 +180,7 @@ public:
         //graph->add_edge(2,4);
         //graph->add_edge(3,4);
 
-        vector<int> tour_nodes = {0,1,2,3};
+        vector<int> tour_nodes = {0};
         tour_path = graph->tour(0, tour_nodes);
     }
 
