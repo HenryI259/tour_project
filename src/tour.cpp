@@ -175,12 +175,12 @@ public:
         graph->add_edge(1,2);
         graph->add_edge(2,3);
         graph->add_edge(3,0);
-        graph->add_edge(0,4);
-        graph->add_edge(1,4);
-        graph->add_edge(2,4);
-        graph->add_edge(3,4);
+        //graph->add_edge(0,4);
+        //graph->add_edge(1,4);
+        //graph->add_edge(2,4);
+        //graph->add_edge(3,4);
 
-        vector<int> tour_nodes = {0,1,2,3,4};
+        vector<int> tour_nodes = {0,1,2,3};
         tour_path = graph->tour(0, tour_nodes);
     }
 
