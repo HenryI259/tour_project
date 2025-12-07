@@ -164,10 +164,10 @@ public:
     void init() {
         vector<Node> nodes(5);
         nodes[0] = Node(0,0);
-        nodes[1] = Node(1,0);
-        nodes[2] = Node(1,1);
-        nodes[3] = Node(0,1);
-        nodes[4] = Node(0.5,0.5);
+        nodes[1] = Node(2,0);
+        nodes[2] = Node(2,2);
+        nodes[3] = Node(0,2);
+        nodes[4] = Node(1,1);
 
         graph = new WeightedGraph(nodes);
 
