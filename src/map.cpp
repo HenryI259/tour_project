@@ -80,6 +80,7 @@ public:
         int width = msg->width;
         int height = msg->height;
         int mid_row = height/2;
+        int band_height = 20;
         int step = msg->step;
 
         right_min = 10;
@@ -88,7 +89,7 @@ public:
         // Encodings differ for each sensor
         if (msg->encoding == "32FC1") {
             const float* depth_data = reinterpret_cast<const float*>(&msg->data[0]);
-            for (int r = mid_row - 2; r <= mid_row+2; r++) {
+            for (int r = mid_row - band_height; r <= mid_row+band_height; r+=2) {
                 for (int c = 0; c < width; c++) {
                     float d = depth_data[c + r*width]/2;
                     if (!std::isnan(d) && d > 0) {
@@ -108,7 +109,7 @@ public:
         }
         else if (msg->encoding == "16UC1") {
             const uint16_t* depth_data = reinterpret_cast<const uint16_t*>(msg->data.data());
-            for (int r = mid_row - 2; r <= mid_row+2; r++) {
+            for (int r = mid_row - band_height; r <= mid_row+band_height; r+=2) {
                 for (int c = 0; c < width; c++) {
                     float d = static_cast<float>(depth_data[c + r*width]) / 2000.0f;
                     if (!std::isnan(d) && d > 0) {
