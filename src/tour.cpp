@@ -156,9 +156,20 @@ private:
 
 public:
 
+    bool ready = false;
+
     void getPosition(const nav_msgs::Odometry::ConstPtr &msg) {
         pos_x = msg->pose.pose.position.x;
         pos_y = msg->pose.pose.position.y;
+    }
+
+    void amclPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &msg) {
+        // Use covariance to check if localization is confident
+        const std::vector<double> &cov = msg->pose.covariance;
+        double max_cov = std::max({cov[0], cov[7], cov[35]});  // x, y, yaw
+        if (max_cov < 0.5) {  // threshold, adjust if needed
+            pose_ready = true;
+        }
     }
 
     void init() {
@@ -245,8 +256,17 @@ int main(int argc, char **argv)
 
     ExplorerRobot robot;
     ros::Subscriber odom_sub = nh.subscribe("/odom", 10, &ExplorerRobot::getPosition, &robot);
+    ros::Subscriber amcl_sub = nh.subscribe("/amcl_pose", 10, &ExplorerRobot::amclPoseCallback, &robot);
 
     robot.init();
+
+    ROS_INFO("Waiting for AMCL pose estimate...");
+    ros::Rate rate(10); // 10 Hz
+    while (ros::ok() && !robot.ready) {
+        ros::spinOnce();
+        rate.sleep();
+    }
+    ROS_INFO("AMCL pose ready, starting tour.");
 
     ROS_INFO("Starting tour with Navigation Stack.");
     robot.run();
