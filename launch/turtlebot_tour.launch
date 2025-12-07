@@ -3,15 +3,13 @@
     <!-- Use simulation time if running in Gazebo -->
     <param name="use_sim_time" value="true"/>
 
-    <!-- Load the map -->
-    <node pkg="map_server" type="map_server" name="map_server"
-          args="$(find tour_project)/maps/map.yaml" />
-
     <!-- Bringup base TurtleBot drivers -->
     <include file="$(find turtlebot_bringup)/launch/minimal.launch" />
 
     <!-- AMCL localization -->
-    <include file="$(find turtlebot_navigation)/launch/amcl_demo.launch" />
+    <include file="$(find turtlebot_navigation)/launch/amcl_demo.launch">
+        <arg name="map_file" value="$(find tour_project)/maps/map.yaml" />
+    </include>
 
     <!-- Move base global + local planners -->
     <include file="$(find turtlebot_navigation)/launch/move_base.launch" />
