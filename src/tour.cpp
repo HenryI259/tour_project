@@ -173,7 +173,7 @@ public:
     }
 
     void init() {
-        vector<Node> nodes(5);
+        vector<Node> nodes(6);
         nodes[0] = Node(0,0);
         nodes[1] = Node(3,0);
         nodes[2] = Node(3,-2);
@@ -193,7 +193,7 @@ public:
         // graph->add_edge(2,4);
         // graph->add_edge(3,4);
 
-        vector<int> tour_nodes = {0, 1, 2, 3, 4};
+        vector<int> tour_nodes = {0, 1, 2, 3, 4, 5};
         tour_path = graph->tour(0, tour_nodes);
     }
 
