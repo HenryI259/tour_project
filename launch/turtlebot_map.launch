@@ -9,9 +9,9 @@
 
     <!-- Start teleop -->
     <node pkg="turtlebot_teleop" type="turtlebot_teleop_key" name="my_teleop_node" output="screen"></node>
-    <!--
+    <!---->
     <param name="robot_description" command="$(find xacro)/xacro '$(find turtlebot_description)/urdf/my_robot.urdf.xacro'" />
--->
+
     
 
     <!--> Run map node -->
