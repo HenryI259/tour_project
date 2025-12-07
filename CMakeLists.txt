@@ -7,21 +7,20 @@ project(tour_project)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS 
- roscpp 
- geometry_msgs
- nav_msgs
- kobuki_msgs
- sensor_msgs
- std_msgs
+
+find_package(catkin REQUIRED COMPONENTS
+  roscpp
+  geometry_msgs
+  nav_msgs
+  sensor_msgs
+  kobuki_msgs
+  actionlib
+  move_base_msgs
+  tf
 )
 
-
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES tour_project
-#  CATKIN_DEPENDS other_catkin_pkg
-#  DEPENDS system_lib
+  CATKIN_DEPENDS roscpp geometry_msgs nav_msgs sensor_msgs kobuki_msgs actionlib move_base_msgs tf
 )
 
 include_directories(
