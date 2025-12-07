@@ -167,7 +167,7 @@ public:
         nodes[1] = Node(1,0);
         nodes[2] = Node(1,1);
         nodes[3] = Node(0,1);
-        nodes[4] = Node(0.5,10);
+        nodes[4] = Node(0.5,0.5);
 
         graph = new WeightedGraph(nodes);
 
@@ -197,7 +197,7 @@ public:
         ROS_INFO("Sending goal (%.2f, %.2f)...", target.x, target.y);
         ac.sendGoal(goal);
 
-        bool finished = ac.waitForResult(ros::Duration(30.0));
+        bool finished = ac.waitForResult(ros::Duration(300.0));
 
         if (!finished) {
             ROS_WARN("Navigation timeout.");
