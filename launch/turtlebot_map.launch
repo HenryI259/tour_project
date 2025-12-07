@@ -4,35 +4,8 @@
     <!-- Turtlebot minimal -->
     <include file="$(find turtlebot_bringup)/launch/minimal.launch"/>
 
-    <!-- 3D sensor -->
-    <include file="$(find turtlebot_bringup)/launch/3dsensor.launch"/>
-
-
-    <node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" output="screen"> 
-        <param name="base_frame" value="base_footprint"/> 
-        <param name="odom_frame" value="odom"/> 
-        <param name="map_update_interval" value="5.0"/> 
-        <param name="maxUrange" value="5.0"/> 
-        <param name="maxRange" value="8.0"/> 
-        <param name="sigma" value="0.05"/> 
-        <param name="kernelSize" value="1"/> 
-        <param name="lstep" value="0.05"/> 
-        <param name="astep" value="0.05"/> 
-        <param name="iterations" value="5"/> 
-        <param name="lsigma" value="0.075"/> 
-        <param name="ogain" value="3.0"/> 
-        <param name="linearUpdate" value="0.5"/> 
-        <param name="angularUpdate" value="0.1"/> 
-        <param name="temporalUpdate" value="1"/> 
-        <param name="resampleThreshold" value="0.5"/> 
-        <param name="particles" value="30"/> 
-        <param name="xmin" value="-10.0"/> 
-        <param name="ymin" value="-10.0"/> 
-        <param name="xmax" value="10.0"/> 
-        <param name="ymax" value="10.0"/> 
-        <param name="delta" value="0.05"/> 
-        <param name="map_frame" value="map"/> 
-    </node>
+    <!-- Start gmapping -->
+    <include file="$(find turtlebot_navigation)/launch/gmapping_demo.launch"/>
 
     <!-- Start teleop -->
     <node pkg="turtlebot_teleop" type="turtlebot_teleop_key" name="my_teleop_node" output="screen"></node>
@@ -44,5 +17,5 @@
     <!-- Run map node -->
     <node pkg="tour_project" type="map" name="map" output="screen"/>
 
-    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find tour_project)/rviz/turtlebot_mapping.rviz" required="true"/>
+    <include file="$(find turtlebot_rviz_launchers)/launch/view_navigation.launch"/>
 </launch>
