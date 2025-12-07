@@ -14,4 +14,6 @@
     <!-- Your tour node -->
     <node pkg="tour_project" type="tour" name="tour" output="screen" />
 
+    <include file="$(find turtlebot_rviz_launchers)/launch/view_navigation.launch"/>
+
 </launch>
