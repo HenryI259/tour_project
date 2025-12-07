@@ -179,11 +179,11 @@ public:
         // Crossroads
         nodes[1] = Node(3,0);
         // Tree
-        nodes[2] = Node(2.3,-1.8);
+        nodes[2] = Node(2.35,-1.7);
         // House
-        nodes[3] = Node(5.0,0);
+        nodes[3] = Node(5.2,-0.23);
         // Pictures
-        nodes[4] = Node(5,-1);
+        nodes[4] = Node(5,-0.75);
 
         graph = new WeightedGraph(nodes);
 
