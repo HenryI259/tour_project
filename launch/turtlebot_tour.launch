@@ -11,12 +11,6 @@
         <arg name="map_file" value="$(find tour_project)/maps/map.yaml" />
     </include>
 
-    <!-- Move base -->
-    <node pkg="move_base" type="move_base" name="move_base" output="screen">
-        <param name="base_global_planner" value="navfn/NavfnROS"/>
-        <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS"/>
-    </node>
-
     <!-- Your tour node -->
     <node pkg="tour_project" type="tour" name="tour" output="screen" />
 
