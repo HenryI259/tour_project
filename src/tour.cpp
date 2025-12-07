@@ -169,7 +169,7 @@ public:
         const std::vector<double> &cov = msg->pose.covariance;
         double max_cov = std::max({cov[0], cov[7], cov[35]});  // x, y, yaw
         if (max_cov < 0.5) {  // threshold, adjust if needed
-            pose_ready = true;
+            ready = true;
         }
     }
 
