@@ -10,9 +10,6 @@
     <!-- Bringup base TurtleBot drivers -->
     <include file="$(find turtlebot_bringup)/launch/minimal.launch" />
 
-    <!-- 3D sensor: RealSense / Kinect / Astra -->
-    <include file="$(find turtlebot_bringup)/launch/3dsensor.launch" />
-
     <!-- AMCL localization -->
     <include file="$(find turtlebot_navigation)/launch/amcl_demo.launch" />
 
