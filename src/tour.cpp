@@ -5,6 +5,7 @@
 #include "sensor_msgs/Image.h"
 #include <actionlib/client/simple_action_client.h>
 #include <move_base_msgs/MoveBaseAction.h>
+#include "geometry_msgs/PoseWithCovarianceStamped.h"
 #include <tf/tf.h>
 #include <cmath>
 #include <random>
