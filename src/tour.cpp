@@ -165,13 +165,11 @@ public:
     }
 
     void amclPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &msg) {
-        void amclPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &msg) {
         const boost::array<double, 36> &cov = msg->pose.covariance;  // use as array
         double max_cov = std::max({cov[0], cov[7], cov[35]});  // x, y, yaw
         if (max_cov < 0.5) {  // threshold, adjust as needed
-            pose_ready = true;
+            ready = true;
         }
-}
     }
 
     void init() {
