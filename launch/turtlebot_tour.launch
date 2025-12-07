@@ -21,4 +21,3 @@
     <node pkg="tour_project" type="tour" name="tour" output="screen" />
 
 </launch>
-</launch>
