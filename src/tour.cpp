@@ -145,314 +145,94 @@ public:
 
 class ExplorerRobot {
 private:
+    double pos_x = 0, pos_y = 0;
 
-    // Position
-    double pos_x;
-    double pos_y;
-    double angle;
-
-    // Robot speed recieved from keyboard
-    double keyboard_linear;
-    double keyboard_angular;
-
-    // Bumper info
-    int bumper_side;
-    int bumper_state;
-
-    // Image Distances
-    double right_min = 10;
-    double left_min = 10;
-
-    // Robot speeds
-    double linear_speed = 0.3;
-    double angular_speed = 1;
-
-    vector<Node> nodes;
-
-    WeightedGraph* graph;
-
+    WeightedGraph *graph;
     Path tour_path;
-
     int current_node = 0;
 
-    // Method for converting all angles to the range [0, 2pi]
-    double correctAnglePos(double a) {
-        while (a >= 6.28) {
-            a -= 6.28;
-        }
-        while (a < 0) {
-            a += 6.28;
-        }
-        return a;
-    }
-
-    // Method for converting all angles to the range [-pi, pi]
-    double correctAngle(double a) {
-        while (a >= 3.14) {
-            a -= 6.28;
-        }
-        while (a < -3.14) {
-            a += 6.28;
-        }
-        return a;
-    }
-
-    // Method for converting all angles to the range [-2pi, 0]
-    double correctAngleNeg(double a) {
-        while (a >= 0) {
-            a -= 6.28;
-        }
-        while (a < -6.28) {
-            a += 6.28;
-        }
-        return a;
-    }
-
 public:
-    // Gets the postion
-    void getPosition(const nav_msgs::Odometry::ConstPtr& msg) {
+
+    void getPosition(const nav_msgs::Odometry::ConstPtr &msg) {
         pos_x = msg->pose.pose.position.x;
         pos_y = msg->pose.pose.position.y;
-        geometry_msgs::Quaternion q = msg->pose.pose.orientation;
-        // Calculate angle
-        angle = atan2(2.0 * (q.w * q.z + q.x * q.y), 1.0 - 2.0 * (q.y * q.y + q.z * q.z));
     }
-
-    // Gets the keyboard inputs
-    void getInputs(const geometry_msgs::Twist::ConstPtr& msg) {
-        keyboard_linear = msg->linear.x;
-        keyboard_angular = msg->angular.z;
-    }
-
-    // Gets the bumper info
-    void getBumper(const kobuki_msgs::BumperEvent::ConstPtr& msg) {
-        bumper_side = msg->bumper;
-        bumper_state = msg->state;
-    }
-    // Gets Image data
-    void getImage(const sensor_msgs::ImageConstPtr& msg) {
-        int width = msg->width;
-        int height = msg->height;
-        int mid_row = height/2;
-        int step = msg->step;
-
-        right_min = 10;
-        left_min = 10;
-
-        // Encodings differ for each sensor
-        if (msg->encoding == "32FC1") {
-            const float* depth_data = reinterpret_cast<const float*>(&msg->data[0]);
-            for (int r = mid_row - 2; r <= mid_row+2; r++) {
-                for (int c = 0; c < width; c++) {
-                    float d = depth_data[c + r*width]/2;
-                    if (!std::isnan(d) && d > 0) {
-                        if (c < width/2) {
-                            if (d < left_min) {
-                                left_min = d;
-                            }
-                        }
-                        else{
-                            if (d < right_min) {
-                                right_min = d;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        else if (msg->encoding == "16UC1") {
-            const uint16_t* depth_data = reinterpret_cast<const uint16_t*>(msg->data.data());
-            for (int r = mid_row - 2; r <= mid_row+2; r++) {
-                for (int c = 0; c < width; c++) {
-                    float d = static_cast<float>(depth_data[c + r*width]) / 2000.0f;
-                    if (!std::isnan(d) && d > 0) {
-                        if (c < width/2) {
-                            if (d < left_min) {
-                                left_min = d;
-                            }
-                        }
-                        else{
-                            if (d < right_min) {
-                                right_min = d;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }   
 
     void init() {
         vector<Node> nodes(5);
-        Node node1(0.0, 0.0);
-        nodes[0] = node1;
-        Node node2(1.0, 0.0);
-        nodes[1] = node2;
-        Node node3(1.0, 1.0);
-        nodes[2] = node3;
-        Node node4(0.0, 1.0);
-        nodes[3] = node4;
-        Node node5(0.5, 10.0);
-        nodes[4] = node5;
+        nodes[0] = Node(0,0);
+        nodes[1] = Node(1,0);
+        nodes[2] = Node(1,1);
+        nodes[3] = Node(0,1);
+        nodes[4] = Node(0.5,10);
 
         graph = new WeightedGraph(nodes);
 
-        graph->add_edge(0, 1);
-        graph->add_edge(1, 2);
-        graph->add_edge(2, 3);
-        graph->add_edge(3, 0);
-        graph->add_edge(0, 4);
-        graph->add_edge(1, 4);
-        graph->add_edge(2, 4);
-        graph->add_edge(3, 4); 
-        
-        vector<int> tour_nodes = {0, 1, 2, 3, 4};
-        int start_node = 0;
+        graph->add_edge(0,1);
+        graph->add_edge(1,2);
+        graph->add_edge(2,3);
+        graph->add_edge(3,0);
+        graph->add_edge(0,4);
+        graph->add_edge(1,4);
+        graph->add_edge(2,4);
+        graph->add_edge(3,4);
 
-        tour_path = graph->tour(start_node, tour_nodes);
-
+        vector<int> tour_nodes = {0,1,2,3,4};
+        tour_path = graph->tour(0, tour_nodes);
     }
 
-    // move function
-    void move(ros::Publisher pub, ros::Rate rate) {
-        // Linear and angular value carried through the method
-        double linear_wire;
-        double angular_wire;
+    bool goToNode(Node target, actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> &ac) {
+        move_base_msgs::MoveBaseGoal goal;
 
-        // Stored positions and angles used for movement
-        double start_x = pos_x;
-        double start_y = pos_y;
-        double start_angle = angle;
+        goal.target_pose.header.frame_id = "map";
+        goal.target_pose.header.stamp = ros::Time::now();
 
-        // Flag for a fixed action turn
-        bool uninterrupted_turn = false;
+        goal.target_pose.pose.position.x = target.x;
+        goal.target_pose.pose.position.y = target.y;
+        goal.target_pose.pose.orientation.w = 1.0;
 
-        float turning_angle = 0;
+        ROS_INFO("Sending goal (%.2f, %.2f)...", target.x, target.y);
+        ac.sendGoal(goal);
 
-        // Flag for if the robot has finished the tour
-        bool tour_finished = false;
+        bool finished = ac.waitForResult(ros::Duration(30.0));
 
-        // init random generator
-        std::random_device rd;
-        std::mt19937 gen(rd());
-        std::uniform_real_distribution<> distrib(-0.262, 0.262);
-
-        // main loop
-        while (ros::ok()) {
-            printf("Current Node: %d / Target Node: (%.2f, %.2f) / Position: (%.2f, %.2f)\n", current_node, tour_path.nodes[current_node].x, tour_path.nodes[current_node].y, pos_x, pos_y, left_min, right_min);
-            // Update node if reached
-            if(euclidean_dis(Node(pos_x, pos_y), tour_path.nodes[current_node]) < 0.05) {
-                if (current_node < tour_path.nodes.size() - 1) {
-                    current_node++;
-                }
-                else {
-                    tour_finished = true;
-                }
-            }
-            
-            // BASE BEHAVIOR
-            linear_wire = 0;
-            angular_wire = 0;
-            
-            // TRAVEL TO NODE BEHAVIOR
-            double target_angle = atan2(tour_path.nodes[current_node].y - pos_y, tour_path.nodes[current_node].x - pos_x);
-            double angle_diff = correctAngle(target_angle - angle);
-            
-            if (angle_diff > 0.1) {
-                angular_wire = angular_speed;
-            }
-            else if (angle_diff < -0.1) {
-                angular_wire = -angular_speed;
-            }
-            else if (angle_diff > 0.3) {
-                angular_wire = angular_speed;
-            }
-            else if (angle_diff < -0.3) {
-                angular_wire = -angular_speed;
-            }
-            else {
-                angular_wire = 0;
-                linear_wire = linear_speed;
-            }
-
-            // AVOID ASYMETRIC OBJECTS BEHAVIOR
-            if (left_min < 0.305) {
-                angular_wire = -angular_speed;
-                linear_wire = linear_speed/2;
-            }
-            else if (right_min < 0.305) {
-                angular_wire = angular_speed;
-                linear_wire = linear_speed/2;
-            }
-
-            
-            // AVOID SYMETRIC OBJECTS BEHAVIOR
-            if (left_min < 0.4 && right_min < 0.4 && !uninterrupted_turn) {
-                turning_angle = -3.14;
-                start_angle = angle;
-                uninterrupted_turn = true;
-            }
-            
-            // Don't move if turning
-            if (uninterrupted_turn) {
-                linear_wire = 0;
-            }
-
-            // Turn until the robot passes its target
-            if (turning_angle > 0) {
-                if (turning_angle > correctAnglePos(angle-start_angle)) {
-                    angular_wire = angular_speed;
-                }
-                else {
-                    turning_angle = 0;
-                    uninterrupted_turn = false;
-                }
-            }
-            else if (turning_angle < 0) {
-                if (turning_angle < correctAngleNeg(angle-start_angle)) {
-                    angular_wire = -angular_speed;
-                }
-                else {
-                    turning_angle = 0;
-                    uninterrupted_turn = false;
-                }
-            }
-
-            // ACCEPT KEYBOARD INPUTS
-            if (abs(keyboard_linear) > 0.01 || abs(keyboard_angular) > 0.01) {
-                linear_wire = keyboard_linear;
-                angular_wire = keyboard_angular;
-                turning_angle = 0;
-                uninterrupted_turn = false;
-            }
-
-            // HALT
-            if (bumper_state) {
-                linear_wire = 0;
-                angular_wire = 0;
-            }
-            
-            // Check if tour is finished
-            if (tour_finished) {
-                linear_wire = 0;
-                angular_wire = 0;
-            }
-
-            // Publish the message to the robot
-            geometry_msgs::Twist vel_msg;
-
-            vel_msg.linear.x = linear_wire;   
-            vel_msg.angular.z = angular_wire;  
-            
-            pub.publish(vel_msg);
-
-            // Retrieve data from the topics
-            ros::spinOnce();
-            rate.sleep();
+        if (!finished) {
+            ROS_WARN("Navigation timeout.");
+            ac.cancelGoal();
+            return false;
         }
+
+        if (ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+            ROS_INFO("Reached (%.2f, %.2f).", target.x, target.y);
+            return true;
+        }
+
+        ROS_WARN("Failed to reach (%.2f, %.2f).", target.x, target.y);
+        return false;
     }
 
+    // -------- MOVE = send all nodes sequentially --------
+
+    void run() {
+        actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> ac("move_base", true);
+        ROS_INFO("Waiting for move_base action server...");
+        ac.waitForServer();
+
+        for (int i = 0; i < tour_path.nodes.size(); i++) {
+            Node n = tour_path.nodes[i];
+            ROS_INFO("NAVIGATING TO NODE #%d...", i);
+
+            bool ok = goToNode(n, ac);
+            if (!ok) {
+                ROS_WARN("Could not reach node %d, skipping.", i);
+                continue;
+            }
+        }
+
+        ROS_INFO("TOUR COMPLETE.");
+    }
 };
+
 
 
 int main(int argc, char **argv)
