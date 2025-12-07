@@ -179,7 +179,7 @@ public:
         nodes[2] = Node(3,-2);
         nodes[3] = Node(5,0);
         nodes[4] = Node(5,-2);
-        nodes[5] = Node(1.5, -1.5);
+        nodes[5] = Node(1.5, -1);
 
         graph = new WeightedGraph(nodes);
 
