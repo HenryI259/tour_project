@@ -176,7 +176,7 @@ public:
         vector<Node> nodes(5);
         nodes[0] = Node(0,0);
         nodes[1] = Node(3,0);
-        nodes[2] = Node(3,-2);
+        nodes[2] = Node(2.5,-1.5);
         nodes[3] = Node(5,0);
         nodes[4] = Node(5,-2);
 
