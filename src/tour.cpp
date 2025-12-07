@@ -183,7 +183,7 @@ public:
         // House
         nodes[3] = Node(5.2,-0.23);
         // Pictures
-        nodes[4] = Node(5,-0.75);
+        nodes[4] = Node(4.8,-0.5);
 
         graph = new WeightedGraph(nodes);
 
