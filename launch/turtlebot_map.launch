@@ -8,14 +8,12 @@
     <include file="$(find turtlebot_navigation)/launch/gmapping_demo.launch"/>
 
     <!-- Start teleop -->
-    <node pkg="turtlebot_teleop" type="turtlebot_teleop_key" name="teleop_keyboard" output="screen">
-        <remap from="/cmd_vel" to="/cmd_vel_mux/input/teleop"/>
-    </node>
-    <!--
+    <node pkg="turtlebot_teleop" type="turtlebot_teleop_key" name="my_teleop_node" output="screen"></node>
+   
     <param name="robot_description" command="$(find xacro)/xacro '$(find turtlebot_description)/urdf/my_robot.urdf.xacro'" />
 
     
-
+ <!--
     <!- Run map node ->
     <node pkg="tour_project" type="map" name="map" output="screen"/>
 -->
