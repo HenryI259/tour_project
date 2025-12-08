@@ -237,7 +237,7 @@ public:
         graph->add_edge(2, 4);
         graph->add_edge(1, 3);
         // Optional Wall
-        graph->add_edge(3, 4);
+        //graph->add_edge(3, 4);
 
         // Nodes the robot must visit
         vector<int> tour_nodes = {0, 2, 3, 4};
