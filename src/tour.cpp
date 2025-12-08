@@ -304,6 +304,10 @@ public:
     }
 };
 
+/*
+    Main function.
+    Creates ROS nodes, initializes robot class, and runs until completion.
+*/
 int main(int argc, char **argv)
 {
     // Initialize ROS
@@ -324,6 +328,8 @@ int main(int argc, char **argv)
     // Wait for AMCL pose to be ready
     ROS_INFO("Waiting for AMCL pose estimate.");
     ros::Rate rate(10); // 10 Hz
+
+
     while (ros::ok() && !robot.ready)
     {
         ros::spinOnce();
