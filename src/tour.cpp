@@ -52,7 +52,7 @@ struct PathSequence {
     }
 };
 
-// WeightedGraph class representing a graph with weighted edges
+// WeightedGraph class representing a graph with weighted edges used for topological map
 class WeightedGraph {
 private:
 public:
