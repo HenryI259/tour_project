@@ -220,11 +220,11 @@ public:
         // All nodes in topological map
         vector<Node> nodes(5);
         // Start
-        nodes[0] = Node(0.1,0);
+        nodes[0] = Node(0.25,0);
         // Crossroads
         nodes[1] = Node(2.8, 0.25);
         // Tree
-        nodes[2] = Node(2.35, -1.7);
+        nodes[2] = Node(2.4,-1.55);
         // House
         nodes[3] = Node(5.1, 0.23);
         // Pictures
