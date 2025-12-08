@@ -52,7 +52,7 @@ struct Path {
     }
 };
 
-// WeightedGraph class representing a graph with weighted edges
+// WeightedGraph class representing a graph with weighted edges used for topological map
 class WeightedGraph {
 private:
 public:
@@ -220,7 +220,7 @@ public:
         // All nodes in topological map
         vector<Node> nodes(5);
         // Start
-        nodes[0] = Node(0.25,0);
+        nodes[0] = Node(0.2,0);
         // Crossroads
         nodes[1] = Node(2.8, 0.25);
         // Tree
@@ -237,7 +237,7 @@ public:
         graph->add_edge(2, 4);
         graph->add_edge(1, 3);
         // Optional Wall
-        //graph->add_edge(3, 4);
+        graph->add_edge(3, 4);
 
         // Nodes the robot must visit
         vector<int> tour_nodes = {0, 2, 3, 4};
