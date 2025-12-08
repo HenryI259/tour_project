@@ -269,5 +269,5 @@ int main(int argc, char **argv)
 // Command to run robot
 // roslaunch tour_project turtlebot_map.launch
 
-// Command to run sim
-// roslaunch tour_project room_hallway_world_map.launch
+// Command to save map
+// rosrun map_server map_saver -f ~/catkin/src/tour_project/maps/my_map

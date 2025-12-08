@@ -17,7 +17,7 @@
 
 using namespace std;
 
-// Array of positions with x positions stored in even indices and y positions stored in odd
+// Node structure representing a point in 2D space
 struct Node {
     double x;
     double y;
@@ -25,10 +25,12 @@ struct Node {
     Node(double x=0, double y=0) : x(x), y(y) {}
 };
 
+// Function to calculate Euclidean distance between two nodes
 double euclidean_dis(Node n1, Node n2) {
     return hypot(n1.x - n2.x, n1.y - n2.y);
 }
 
+// Path structure representing a sequence of nodes and its total distance
 struct Path {
     vector<Node> nodes;
     double path_distance;
@@ -41,6 +43,7 @@ struct Path {
     }
 };
 
+// WeightedGraph class representing a graph with weighted edges
 class WeightedGraph {
 private:
 
@@ -48,34 +51,43 @@ public:
     vector<Node> nodes;
     vector<vector<pair<int, double>>> edges;
 
+    // Constructor
     WeightedGraph(vector<Node> nodes): nodes(nodes) {
         edges.resize(nodes.size());
     }
 
+    // Method to add an edge between two nodes with weight as Euclidean distance
     void add_edge(int u, int v) {
         double dis = euclidean_dis(nodes[u], nodes[v]);
         edges[u].push_back({v, dis});
         edges[v].push_back({u, dis});
     }
 
+    // Dijkstra's algorithm to find the shortest path between two nodes
     Path dijkstra(int start_node, int dest_node) {
+        // Initialize data structures
         priority_queue<pair<double, int>, vector<pair<double, int>>, greater<pair<double, int>>> pq;
         vector<double> distances(nodes.size(), numeric_limits<double>::max());
         vector<int> parent(nodes.size(), -1);
         
+        // Start from the start_node
         distances[start_node] = 0;
         pq.emplace(0.0, start_node);
 
+        // Main loop
         while (!pq.empty()) {
+            // Get the node with the smallest distance
             auto top = pq.top();
             pq.pop();
 
             int n = top.second;
             double dist = top.first;
 
+            // If this distance is greater than the recorded distance, skip
             if (dist > distances[n])
                 continue;
                 
+            // Explore neighbors
             for (auto& neighbor : edges[n]) {
                 int v = neighbor.first;
                 double w = neighbor.second;
@@ -88,6 +100,7 @@ public:
             }
         }
 
+        // Reconstruct the path from start_node to dest_node
         vector<Node> path_nodes;
         int current_node = dest_node;
         while(current_node != -1) {
@@ -96,12 +109,14 @@ public:
         }
         reverse(path_nodes.begin(), path_nodes.end());
 
+        // Final path result
         Path path_result;
         path_result.nodes = path_nodes;
         path_result.set_distance();
         return path_result;
     }
 
+    // Find a tour starting from start_node visiting all tour_nodes using nearest neighbor heuristic
     Path tour(int start_node, vector<int> tour_nodes) {
         vector<int> remaining = tour_nodes;
         int current_node_index;
@@ -141,38 +156,51 @@ public:
             current_node_index  = next_node_index;
         }
 
+        // Return to start node
+        Path path_to_start = dijkstra(remaining[current_node_index], start_node);
+        for (int j = 1; j < path_to_start.nodes.size(); j++) {
+            tour_path.nodes.push_back(path_to_start.nodes[j]);
+        }
+
         tour_path.set_distance();
 
         return tour_path;
     }
 };
 
+// ExplorerRobot class for robot navigation
 class ExplorerRobot {
 private:
+    // Current position
     double pos_x = 0, pos_y = 0;
 
+    // Graph and tour path that the robot will follow
     WeightedGraph *graph;
     Path tour_path;
     int current_node = 0;
 
 public:
 
+    // Flag to indicate if AMCL pose is ready
     bool ready = false;
 
+    // Get position from odometry
     void getPosition(const nav_msgs::Odometry::ConstPtr &msg) {
         pos_x = msg->pose.pose.position.x;
         pos_y = msg->pose.pose.position.y;
     }
 
+    // Determine if AMCL pose is ready
     void amclPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &msg) {
-        const boost::array<double, 36> &cov = msg->pose.covariance;  // use as array
-        double max_cov = std::max({cov[0], cov[7], cov[35]});  // x, y, yaw
-        if (max_cov < 0.5) {  // threshold, adjust as needed
+        const boost::array<double, 36> &cov = msg->pose.covariance;  
+        double max_cov = std::max({cov[0], cov[7], cov[35]});  
+        if (max_cov < 0.5) {  
             ready = true;
         }
     }
 
     void init() {
+        // All nodes in topological map
         vector<Node> nodes(5);
         // Start
         nodes[0] = Node(0,0);
@@ -194,11 +222,14 @@ public:
         // Optional Wall
         graph->add_edge(3,4);
 
+        // Nodes the robot must visit
         vector<int> tour_nodes = {0, 2, 3, 4};
         tour_path = graph->tour(0, tour_nodes);
     }
 
+    // Send a goal to move_base and wait for result
     bool goToNode(Node target, actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> &ac) {
+        // Create goal
         move_base_msgs::MoveBaseGoal goal;
 
         goal.target_pose.header.frame_id = "map";
@@ -208,44 +239,50 @@ public:
         goal.target_pose.pose.position.y = target.y;
         goal.target_pose.pose.orientation.w = 1.0;
 
-        ROS_INFO("Sending goal (%.2f, %.2f)...", target.x, target.y);
+        // Send goal
+        ROS_INFO("Sending goal (%.2f, %.2f).", target.x, target.y);
         ac.sendGoal(goal);
 
+        // Wait for result
         bool finished = ac.waitForResult(ros::Duration(300.0));
 
+        // If not finished in time cancel the goal
         if (!finished) {
             ROS_WARN("Navigation timeout.");
             ac.cancelGoal();
             return false;
         }
 
+        // If succeeded notify success and return true
         if (ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
             ROS_INFO("Reached (%.2f, %.2f).", target.x, target.y);
             return true;
         }
-
-        ROS_WARN("Failed to reach (%.2f, %.2f).", target.x, target.y);
+        
         return false;
     }
 
-    // -------- MOVE = send all nodes sequentially --------
-
+    // Run the tour
     void run() {
+        // Create action client to move_base
         actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> ac("move_base", true);
-        ROS_INFO("Waiting for move_base action server...");
+        ROS_INFO("Waiting for move_base action server.");
         ac.waitForServer();
 
+        // Navigate through each node in the tour path one at a time
         for (int i = 0; i < tour_path.nodes.size(); i++) {
             Node n = tour_path.nodes[i];
-            ROS_INFO("NAVIGATING TO NODE #%d...", i);
+            ROS_INFO("NAVIGATING TO NODE #%d.", i);
 
-            bool ok = goToNode(n, ac);
-            if (!ok) {
+            // Go to node and check if successful
+            bool finished = goToNode(n, ac);
+            if (!finished) {
                 ROS_WARN("Could not reach node %d, skipping.", i);
                 continue;
             }
         }
 
+        // Notify that the tour is complete
         ROS_INFO("TOUR COMPLETE.");
     }
 };
@@ -254,22 +291,30 @@ public:
 
 int main(int argc, char **argv)
 {
+    // Initialize ROS
     ros::init(argc, argv, "turtlebot_tour_navstack");
     ros::NodeHandle nh;
 
+    // Create ExplorerRobot instance
     ExplorerRobot robot;
+
+    // Subscribers
     ros::Subscriber odom_sub = nh.subscribe("/odom", 10, &ExplorerRobot::getPosition, &robot);
     ros::Subscriber amcl_sub = nh.subscribe("/amcl_pose", 10, &ExplorerRobot::amclPoseCallback, &robot);
 
+    // Initialize robot and decide tour path
+    ROS_INFO("Initializing robot and deciding tour path.");
     robot.init();
 
-    ROS_INFO("Waiting for AMCL pose estimate...");
+    // Wait for AMCL pose to be ready
+    ROS_INFO("Waiting for AMCL pose estimate.");
     ros::Rate rate(10); // 10 Hz
     while (ros::ok() && !robot.ready) {
         ros::spinOnce();
         rate.sleep();
     }
     ROS_INFO("AMCL pose ready, starting tour.");
+
 
     ROS_INFO("Starting tour with Navigation Stack.");
     robot.run();
@@ -278,5 +323,4 @@ int main(int argc, char **argv)
 }
 
 // Command to run robot
-// roslaunch tour_project room_hallway_world_tour.launch
 // roslaunch tour_project turtlebot_tour.launch
