@@ -8,9 +8,9 @@
 
 using namespace std;
 
-class ExplorerRobot {
+class ExplorerRobot
+{
 private:
-
     // Position
     double pos_x;
     double pos_y;
@@ -33,22 +33,28 @@ private:
     double angular_speed = 1;
 
     // Method for converting all angles to the range [0, 2pi]
-    double correctAnglePos(double a) {
-        while (a > 6.28) {
+    double correctAnglePos(double a)
+    {
+        while (a > 6.28)
+        {
             a -= 6.28;
         }
-        while (a < 0) {
+        while (a < 0)
+        {
             a += 6.28;
         }
         return a;
     }
 
     // Method for converting all angles to the range [-2pi, 0]
-    double correctAngleNeg(double a) {
-        while (a > 0) {
+    double correctAngleNeg(double a)
+    {
+        while (a > 0)
+        {
             a -= 6.28;
         }
-        while (a < -6.28) {
+        while (a < -6.28)
+        {
             a += 6.28;
         }
         return a;
@@ -56,7 +62,8 @@ private:
 
 public:
     // Gets the postion
-    void getPosition(const nav_msgs::Odometry::ConstPtr& msg) {
+    void getPosition(const nav_msgs::Odometry::ConstPtr &msg)
+    {
         pos_x = msg->pose.pose.position.x;
         pos_y = msg->pose.pose.position.y;
         geometry_msgs::Quaternion q = msg->pose.pose.orientation;
@@ -65,21 +72,24 @@ public:
     }
 
     // Gets the keyboard inputs
-    void getInputs(const geometry_msgs::Twist::ConstPtr& msg) {
+    void getInputs(const geometry_msgs::Twist::ConstPtr &msg)
+    {
         keyboard_linear = msg->linear.x;
         keyboard_angular = msg->angular.z;
     }
 
     // Gets the bumper info
-    void getBumper(const kobuki_msgs::BumperEvent::ConstPtr& msg) {
+    void getBumper(const kobuki_msgs::BumperEvent::ConstPtr &msg)
+    {
         bumper_side = msg->bumper;
         bumper_state = msg->state;
     }
     // Gets Image data
-    void getImage(const sensor_msgs::ImageConstPtr& msg) {
+    void getImage(const sensor_msgs::ImageConstPtr &msg)
+    {
         int width = msg->width;
         int height = msg->height;
-        int mid_row = height/2;
+        int mid_row = height / 2;
         int band_height = 20;
         int step = msg->step;
 
@@ -87,19 +97,27 @@ public:
         left_min = 10;
 
         // Encodings differ for each sensor
-        if (msg->encoding == "32FC1") {
-            const float* depth_data = reinterpret_cast<const float*>(&msg->data[0]);
-            for (int r = mid_row - band_height; r <= mid_row+band_height; r+=2) {
-                for (int c = 0; c < width; c++) {
-                    float d = depth_data[c + r*width]/2;
-                    if (!std::isnan(d) && d > 0) {
-                        if (c < width/2) {
-                            if (d < left_min) {
+        if (msg->encoding == "32FC1")
+        {
+            const float *depth_data = reinterpret_cast<const float *>(&msg->data[0]);
+            for (int r = mid_row - band_height; r <= mid_row + band_height; r += 2)
+            {
+                for (int c = 0; c < width; c++)
+                {
+                    float d = depth_data[c + r * width] / 2;
+                    if (!std::isnan(d) && d > 0)
+                    {
+                        if (c < width / 2)
+                        {
+                            if (d < left_min)
+                            {
                                 left_min = d;
                             }
                         }
-                        else{
-                            if (d < right_min) {
+                        else
+                        {
+                            if (d < right_min)
+                            {
                                 right_min = d;
                             }
                         }
@@ -107,19 +125,27 @@ public:
                 }
             }
         }
-        else if (msg->encoding == "16UC1") {
-            const uint16_t* depth_data = reinterpret_cast<const uint16_t*>(msg->data.data());
-            for (int r = mid_row - band_height; r <= mid_row+band_height; r+=2) {
-                for (int c = 0; c < width; c++) {
-                    float d = static_cast<float>(depth_data[c + r*width]) / 2000.0f;
-                    if (!std::isnan(d) && d > 0) {
-                        if (c < width/2) {
-                            if (d < left_min) {
+        else if (msg->encoding == "16UC1")
+        {
+            const uint16_t *depth_data = reinterpret_cast<const uint16_t *>(msg->data.data());
+            for (int r = mid_row - band_height; r <= mid_row + band_height; r += 2)
+            {
+                for (int c = 0; c < width; c++)
+                {
+                    float d = static_cast<float>(depth_data[c + r * width]) / 2000.0f;
+                    if (!std::isnan(d) && d > 0)
+                    {
+                        if (c < width / 2)
+                        {
+                            if (d < left_min)
+                            {
                                 left_min = d;
                             }
                         }
-                        else{
-                            if (d < right_min) {
+                        else
+                        {
+                            if (d < right_min)
+                            {
                                 right_min = d;
                             }
                         }
@@ -127,10 +153,11 @@ public:
                 }
             }
         }
-    }    
+    }
 
     // move function
-    void move(ros::Publisher pub, ros::Rate rate) {
+    void move(ros::Publisher pub, ros::Rate rate)
+    {
         // Linear and angular value carried through the method
         double linear_wire;
         double angular_wire;
@@ -151,13 +178,15 @@ public:
         std::uniform_real_distribution<> distrib(-0.262, 0.262);
 
         // main loop
-        while (ros::ok()) {
+        while (ros::ok())
+        {
             // DRIVE FORWARD BEHAVIOR
             linear_wire = linear_speed;
             angular_wire = 0;
-            
+
             // RANDOM TURN BEHAVIOR
-            if (sqrt((pos_x-start_x)*(pos_x-start_x) + (pos_y-start_y)*(pos_y-start_y)) > 0.3048 && !uninterrupted_turn && left_min > 0.6 && right_min > 0.6) {
+            if (sqrt((pos_x - start_x) * (pos_x - start_x) + (pos_y - start_y) * (pos_y - start_y)) > 0.3048 && !uninterrupted_turn && left_min > 0.6 && right_min > 0.6)
+            {
                 turning_angle = distrib(gen);
                 start_angle = angle;
 
@@ -166,50 +195,60 @@ public:
             }
 
             // AVOID ASYMETRIC OBJECTS BEHAVIOR
-            if (left_min < 0.305) {
+            if (left_min < 0.305)
+            {
                 angular_wire = -angular_speed;
-                linear_wire = linear_speed/2;
+                linear_wire = linear_speed / 2;
             }
-            else if (right_min < 0.305) {
+            else if (right_min < 0.305)
+            {
                 angular_wire = angular_speed;
-                linear_wire = linear_speed/2;
+                linear_wire = linear_speed / 2;
             }
 
-            
             // AVOID SYMETRIC OBJECTS BEHAVIOR
-            if (left_min < 0.4 && right_min < 0.4 && !uninterrupted_turn) {
+            if (left_min < 0.4 && right_min < 0.4 && !uninterrupted_turn)
+            {
                 turning_angle = -3.14;
                 start_angle = angle;
                 uninterrupted_turn = true;
             }
-            
+
             // Don't move if turning
-            if (uninterrupted_turn) {
+            if (uninterrupted_turn)
+            {
                 linear_wire = 0;
             }
 
             // Turn until the robot passes its target
-            if (turning_angle > 0) {
-                if (turning_angle > correctAnglePos(angle-start_angle)) {
+            if (turning_angle > 0)
+            {
+                if (turning_angle > correctAnglePos(angle - start_angle))
+                {
                     angular_wire = angular_speed;
                 }
-                else {
+                else
+                {
                     turning_angle = 0;
                     uninterrupted_turn = false;
                 }
             }
-            else if (turning_angle < 0) {
-                if (turning_angle < correctAngleNeg(angle-start_angle)) {
+            else if (turning_angle < 0)
+            {
+                if (turning_angle < correctAngleNeg(angle - start_angle))
+                {
                     angular_wire = -angular_speed;
                 }
-                else {
+                else
+                {
                     turning_angle = 0;
                     uninterrupted_turn = false;
                 }
             }
 
             // ACCEPT KEYBOARD INPUTS
-            if (abs(keyboard_linear) > 0.01 || abs(keyboard_angular) > 0.01) {
+            if (abs(keyboard_linear) > 0.01 || abs(keyboard_angular) > 0.01)
+            {
                 linear_wire = keyboard_linear;
                 angular_wire = keyboard_angular;
                 turning_angle = 0;
@@ -217,18 +256,18 @@ public:
             }
 
             // HALT
-            if (bumper_state) {
+            if (bumper_state)
+            {
                 linear_wire = 0;
                 angular_wire = 0;
             }
-            
 
             // Publish the message to the robot
             geometry_msgs::Twist vel_msg;
 
-            vel_msg.linear.x = linear_wire;   
-            vel_msg.angular.z = angular_wire;  
-            
+            vel_msg.linear.x = linear_wire;
+            vel_msg.angular.z = angular_wire;
+
             pub.publish(vel_msg);
 
             // Retrieve data from the topics
@@ -236,9 +275,7 @@ public:
             rate.sleep();
         }
     }
-
 };
-
 
 int main(int argc, char **argv)
 {
@@ -251,7 +288,7 @@ int main(int argc, char **argv)
 
     // Publisher to TurtleBot2 /mobile_base/commands/velocity
     ros::Publisher pub = nh.advertise<geometry_msgs::Twist>("/mobile_base/commands/velocity", 10);
-    
+
     // Subscribers
     ros::Subscriber odom_sub = nh.subscribe("/odom", 10, &ExplorerRobot::getPosition, &robot);
     ros::Subscriber teleop_sub = nh.subscribe("/my_teleop_node/cmd_vel", 10, &ExplorerRobot::getInputs, &robot);

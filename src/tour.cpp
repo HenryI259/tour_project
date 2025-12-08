@@ -1,3 +1,10 @@
+/*
+This is the main file we run for our project.
+
+Based on map.cpp.
+The primary addition is WeightedGraph, a class which allows for topological navigation.
+
+*/
 #include "ros/ros.h"
 #include "geometry_msgs/Twist.h"
 #include "nav_msgs/Odometry.h"
@@ -22,7 +29,7 @@ struct Node {
     double x;
     double y;
 
-    Node(double x=0, double y=0) : x(x), y(y) {}
+    Node(double x = 0, double y = 0) : x(x), y(y) {}
 };
 
 // Function to calculate Euclidean distance between two nodes
@@ -35,10 +42,12 @@ struct Path {
     vector<Node> nodes;
     double path_distance;
 
-    void set_distance() {
+    void set_distance()
+    {
         path_distance = 0;
-        for (int i = 0; i < nodes.size()-1; i++) {
-            path_distance += euclidean_dis(nodes[i], nodes[i+1]);
+        for (int i = 0; i < nodes.size() - 1; i++)
+        {
+            path_distance += euclidean_dis(nodes[i], nodes[i + 1]);
         }
     }
 };
@@ -46,8 +55,7 @@ struct Path {
 // WeightedGraph class representing a graph with weighted edges
 class WeightedGraph {
 private:
-
-public: 
+public:
     vector<Node> nodes;
     vector<vector<pair<int, double>>> edges;
 
@@ -92,7 +100,8 @@ public:
                 int v = neighbor.first;
                 double w = neighbor.second;
 
-                if (distances[n] + w < distances[v]) {
+                if (distances[n] + w < distances[v])
+                {
                     distances[v] = distances[n] + w;
                     parent[v] = n;
                     pq.emplace(distances[v], v);
@@ -103,7 +112,8 @@ public:
         // Reconstruct the path from start_node to dest_node
         vector<Node> path_nodes;
         int current_node = dest_node;
-        while(current_node != -1) {
+        while (current_node != -1)
+        {
             path_nodes.push_back(nodes[current_node]);
             current_node = parent[current_node];
         }
@@ -121,8 +131,10 @@ public:
         vector<int> remaining = tour_nodes;
         int current_node_index;
         // Find the start node set it as the beginning and mark it as removed nodes to choose
-        for (int i = 0; i < remaining.size(); i++) {
-            if (remaining[i] == start_node) {
+        for (int i = 0; i < remaining.size(); i++)
+        {
+            if (remaining[i] == start_node)
+            {
                 current_node_index = i;
             }
         }
@@ -130,15 +142,19 @@ public:
         // Final tour path
         Path tour_path;
         tour_path.nodes.push_back(nodes[start_node]);
-        for (int i = 0; i < remaining.size()-1; i++) {
+        for (int i = 0; i < remaining.size() - 1; i++)
+        {
             double min_dis = numeric_limits<double>::max();
             int next_node_index;
             // Find nearest neighbor
             Path min_inner_path;
-            for (int j = 0; j < remaining.size(); j++) {
-                if (remaining[j] != -1 && j != current_node_index) {
+            for (int j = 0; j < remaining.size(); j++)
+            {
+                if (remaining[j] != -1 && j != current_node_index)
+                {
                     Path inner_path = dijkstra(remaining[current_node_index], remaining[j]);
-                    if (inner_path.path_distance < min_dis) {
+                    if (inner_path.path_distance < min_dis)
+                    {
                         min_dis = inner_path.path_distance;
                         next_node_index = j;
                         min_inner_path = inner_path;
@@ -147,10 +163,11 @@ public:
             }
 
             // Add inner path to temp path
-            for (int j = 1; j < min_inner_path.nodes.size(); j++) {
+            for (int j = 1; j < min_inner_path.nodes.size(); j++)
+            {
                 tour_path.nodes.push_back(min_inner_path.nodes[j]);
             }
-            
+
             // Mark node as removed and update index
             remaining[current_node_index] = -1;
             current_node_index  = next_node_index;
@@ -205,22 +222,22 @@ public:
         // Start
         nodes[0] = Node(0.25,0);
         // Crossroads
-        nodes[1] = Node(2.8,0.25);
+        nodes[1] = Node(2.8, 0.25);
         // Tree
         nodes[2] = Node(2.4,-1.55);
         // House
-        nodes[3] = Node(5.1,0.23);
+        nodes[3] = Node(5.1, 0.23);
         // Pictures
-        nodes[4] = Node(4.8,-0.5);
+        nodes[4] = Node(4.8, -0.5);
 
         graph = new WeightedGraph(nodes);
 
-        graph->add_edge(0,1);
-        graph->add_edge(1,2);
-        graph->add_edge(2,4);
-        graph->add_edge(1,3);
+        graph->add_edge(0, 1);
+        graph->add_edge(1, 2);
+        graph->add_edge(2, 4);
+        graph->add_edge(1, 3);
         // Optional Wall
-        graph->add_edge(3,4);
+        graph->add_edge(3, 4);
 
         // Nodes the robot must visit
         vector<int> tour_nodes = {0, 2, 3, 4};
@@ -287,8 +304,6 @@ public:
     }
 };
 
-
-
 int main(int argc, char **argv)
 {
     // Initialize ROS
@@ -309,7 +324,8 @@ int main(int argc, char **argv)
     // Wait for AMCL pose to be ready
     ROS_INFO("Waiting for AMCL pose estimate.");
     ros::Rate rate(10); // 10 Hz
-    while (ros::ok() && !robot.ready) {
+    while (ros::ok() && !robot.ready)
+    {
         ros::spinOnce();
         rate.sleep();
     }
