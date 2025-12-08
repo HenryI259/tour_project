@@ -13,5 +13,6 @@
     <!--> Run map node -->
     <node pkg="tour_project" type="map" name="map" output="screen"/>
 
+    <!-- Start RViz -->
     <include file="$(find turtlebot_rviz_launchers)/launch/view_navigation.launch"/>
 </launch>

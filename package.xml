@@ -25,7 +25,6 @@
   <build_depend>tf</build_depend>
 
   <!-- Run-time dependencies -->
-
   <exec_depend>roscpp</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>nav_msgs</exec_depend>
@@ -39,15 +38,6 @@
   <exec_depend>turtlebot_gazebo</exec_depend>
   <exec_depend>turtlebot_teleop</exec_depend>
 
-
-  <!-- Optional: If using teleop, Gazebo, or navigation -->
   <exec_depend>turtlebot_gazebo</exec_depend>
   <exec_depend>turtlebot_teleop</exec_depend><buildtool_depend>catkin</buildtool_depend>
-
-
-  <!-- The export tag contains other, unspecified, tags -->
-  <export>
-    <!-- Other tools can request additional information be placed here -->
-
-  </export>
 </package>
