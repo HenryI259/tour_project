@@ -1,9 +1,8 @@
 /*
 This is the main file we run for our project.
 
-Based on map.cpp.
-The primary addition is WeightedGraph, a class which allows for topological navigation.
-
+The two classes are WeightedGraph, a class which allows for topological navigation, and ExplorerRobot, a class that handles the main navigation using a metric map.
+We have also provided supplementary structs, PathNode and PathSequence.
 */
 #include "ros/ros.h"
 #include "geometry_msgs/Twist.h"
@@ -24,22 +23,22 @@ The primary addition is WeightedGraph, a class which allows for topological navi
 
 using namespace std;
 
-// Node structure representing a point in 2D space
-struct Node {
+// PathNode is a node structure representing a point in 2D space.
+struct PathNode {
     double x;
     double y;
 
-    Node(double x = 0, double y = 0) : x(x), y(y) {}
+    PathNode(double x = 0, double y = 0) : x(x), y(y) {}
 };
 
-// Function to calculate Euclidean distance between two nodes
-double euclidean_dis(Node n1, Node n2) {
+// Function to calculate Euclidean distance between two nodes.
+double euclidean_dis(PathNode n1, PathNode n2) {
     return hypot(n1.x - n2.x, n1.y - n2.y);
 }
 
-// Path structure representing a sequence of nodes and its total distance
-struct Path {
-    vector<Node> nodes;
+// PathSequence represents a sequence of nodes and their cumulative distance.
+struct PathSequence {
+    vector<PathNode> nodes;
     double path_distance;
 
     void set_distance()
@@ -56,11 +55,11 @@ struct Path {
 class WeightedGraph {
 private:
 public:
-    vector<Node> nodes;
+    vector<PathNode> nodes;
     vector<vector<pair<int, double>>> edges;
 
     // Constructor
-    WeightedGraph(vector<Node> nodes): nodes(nodes) {
+    WeightedGraph(vector<PathNode> nodes): nodes(nodes) {
         edges.resize(nodes.size());
     }
 
@@ -71,8 +70,10 @@ public:
         edges[v].push_back({u, dis});
     }
 
-    // Dijkstra's algorithm to find the shortest path between two nodes
-    Path dijkstra(int start_node, int dest_node) {
+    /*
+        Dijkstra's algorithm to find the shortest path between two nodes
+    */ 
+    PathSequence dijkstra(int start_node, int dest_node) {
         // Initialize data structures
         priority_queue<pair<double, int>, vector<pair<double, int>>, greater<pair<double, int>>> pq;
         vector<double> distances(nodes.size(), numeric_limits<double>::max());
@@ -110,7 +111,7 @@ public:
         }
 
         // Reconstruct the path from start_node to dest_node
-        vector<Node> path_nodes;
+        vector<PathNode> path_nodes;
         int current_node = dest_node;
         while (current_node != -1)
         {
@@ -120,17 +121,23 @@ public:
         reverse(path_nodes.begin(), path_nodes.end());
 
         // Final path result
-        Path path_result;
+        PathSequence path_result;
         path_result.nodes = path_nodes;
         path_result.set_distance();
         return path_result;
     }
 
-    // Find a tour starting from start_node visiting all tour_nodes using nearest neighbor heuristic
-    Path tour(int start_node, vector<int> tour_nodes) {
+    /*
+        Generate a tour.
+            Starts from start_node.
+            Visits all tour_nodes. 
+        Uses nearest neighbor heuristic.
+    */
+    PathSequence generate_tour(int start_node, vector<int> tour_nodes) {
         vector<int> remaining = tour_nodes;
         int current_node_index;
-        // Find the start node set it as the beginning and mark it as removed nodes to choose
+        // Find the start node, and set it as the beginning.
+        // Mark it as removed nodes to choose
         for (int i = 0; i < remaining.size(); i++)
         {
             if (remaining[i] == start_node)
@@ -140,19 +147,19 @@ public:
         }
 
         // Final tour path
-        Path tour_path;
+        PathSequence tour_path;
         tour_path.nodes.push_back(nodes[start_node]);
         for (int i = 0; i < remaining.size() - 1; i++)
         {
             double min_dis = numeric_limits<double>::max();
             int next_node_index;
             // Find nearest neighbor
-            Path min_inner_path;
+            PathSequence min_inner_path;
             for (int j = 0; j < remaining.size(); j++)
             {
                 if (remaining[j] != -1 && j != current_node_index)
                 {
-                    Path inner_path = dijkstra(remaining[current_node_index], remaining[j]);
+                    PathSequence inner_path = dijkstra(remaining[current_node_index], remaining[j]);
                     if (inner_path.path_distance < min_dis)
                     {
                         min_dis = inner_path.path_distance;
@@ -174,7 +181,7 @@ public:
         }
 
         // Return to start node
-        Path path_to_start = dijkstra(remaining[current_node_index], start_node);
+        PathSequence path_to_start = dijkstra(remaining[current_node_index], start_node);
         for (int j = 1; j < path_to_start.nodes.size(); j++) {
             tour_path.nodes.push_back(path_to_start.nodes[j]);
         }
@@ -193,7 +200,7 @@ private:
 
     // Graph and tour path that the robot will follow
     WeightedGraph *graph;
-    Path tour_path;
+    PathSequence tour_path;
     int current_node = 0;
 
 public:
@@ -218,17 +225,17 @@ public:
 
     void init() {
         // All nodes in topological map
-        vector<Node> nodes(5);
+        vector<PathNode> nodes(5);
         // Start
-        nodes[0] = Node(0.2,0);
+        nodes[0] = PathNode(0.25,0);
         // Crossroads
-        nodes[1] = Node(2.8, 0.25);
+        nodes[1] = PathNode(2.8, 0.25);
         // Tree
-        nodes[2] = Node(2.4,-1.55);
+        nodes[2] = PathNode(2.4,-1.55);
         // House
-        nodes[3] = Node(5.1, 0.23);
+        nodes[3] = PathNode(5.1, 0.23);
         // Pictures
-        nodes[4] = Node(4.8, -0.5);
+        nodes[4] = PathNode(4.8, -0.5);
 
         graph = new WeightedGraph(nodes);
 
@@ -241,11 +248,11 @@ public:
 
         // Nodes the robot must visit
         vector<int> tour_nodes = {0, 2, 3, 4};
-        tour_path = graph->tour(0, tour_nodes);
+        tour_path = graph->generate_tour(0, tour_nodes);
     }
 
     // Send a goal to move_base and wait for result
-    bool goToNode(Node target, actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> &ac) {
+    bool goToNode(PathNode target, actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> &ac) {
         // Create goal
         move_base_msgs::MoveBaseGoal goal;
 
@@ -288,7 +295,7 @@ public:
 
         // Navigate through each node in the tour path one at a time
         for (int i = 0; i < tour_path.nodes.size(); i++) {
-            Node n = tour_path.nodes[i];
+            PathNode n = tour_path.nodes[i];
             ROS_INFO("NAVIGATING TO NODE #%d.", i);
 
             // Go to node and check if successful
