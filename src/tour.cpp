@@ -191,7 +191,8 @@ public:
         graph->add_edge(1,2);
         graph->add_edge(2,4);
         graph->add_edge(1,3);
-        //graph->add_edge(3,4);
+        // Optional Wall
+        graph->add_edge(3,4);
 
         vector<int> tour_nodes = {0, 2, 3, 4};
         tour_path = graph->tour(0, tour_nodes);
