@@ -177,11 +177,11 @@ public:
         // Start
         nodes[0] = Node(0,0);
         // Crossroads
-        nodes[1] = Node(3,0);
+        nodes[1] = Node(2.8,0.25);
         // Tree
         nodes[2] = Node(2.35,-1.7);
         // House
-        nodes[3] = Node(5.2,-0.23);
+        nodes[3] = Node(5.1,0.23);
         // Pictures
         nodes[4] = Node(4.8,-0.5);
 
