@@ -1,8 +1,7 @@
 /*
 This is the main file we run for our project.
 
-Based on map.cpp.
-The primary addition is WeightedGraph, a class which allows for topological navigation.
+The two classes are WeightedGraph, a class which allows for topological navigation, and ExplorerRobot, a class that handles the main navigation using a metric map.
 We have also provided supplementary structs, PathNode and PathSequence.
 */
 #include "ros/ros.h"
