@@ -3,7 +3,7 @@ This is the main file we run for our project.
 
 Based on map.cpp.
 The primary addition is WeightedGraph, a class which allows for topological navigation.
-
+We have also provided supplementary structs, PathNode and PathSequence.
 */
 #include "ros/ros.h"
 #include "geometry_msgs/Twist.h"
@@ -24,7 +24,7 @@ The primary addition is WeightedGraph, a class which allows for topological navi
 
 using namespace std;
 
-// Node structure representing a point in 2D space
+// PathNode is a node structure representing a point in 2D space.
 struct PathNode {
     double x;
     double y;
@@ -32,12 +32,12 @@ struct PathNode {
     PathNode(double x = 0, double y = 0) : x(x), y(y) {}
 };
 
-// Function to calculate Euclidean distance between two nodes
+// Function to calculate Euclidean distance between two nodes.
 double euclidean_dis(PathNode n1, PathNode n2) {
     return hypot(n1.x - n2.x, n1.y - n2.y);
 }
 
-// Path structure representing a sequence of nodes and its total distance
+// PathSequence represents a sequence of nodes and their cumulative distance.
 struct PathSequence {
     vector<PathNode> nodes;
     double path_distance;
